@@ -1,0 +1,853 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Optimización de Envíos de Grano</title>
+
+    <style>
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .presentation-container {
+            width: 95%;
+            max-width: 1200px;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .slide {
+            display: none;
+            padding: 40px;
+            min-height: 600px;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        .slide.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .slide-header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 3px solid #667eea;
+        }
+
+        .slide-title {
+            font-size: 2.5em;
+            color: #333;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .slide-subtitle {
+            font-size: 1.2em;
+            color: #666;
+            font-weight: 300;
+        }
+
+        .content-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .content-box {
+            background: #f8f9ff;
+            padding: 25px;
+            border-radius: 15px;
+            border-left: 5px solid #667eea;
+        }
+
+        .content-box h3 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 1.4em;
+        }
+
+        .content-box ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .content-box li {
+            margin-bottom: 8px;
+            padding-left: 20px;
+            position: relative;
+        }
+
+        .content-box li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #667eea;
+            font-weight: bold;
+        }
+
+        .table-container {
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            margin: 20px 0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: center;
+            border-bottom: 1px solid #eee;
+        }
+
+        th {
+            background: #667eea;
+            color: white;
+            font-weight: 600;
+        }
+
+        .code-container {
+            background: #1e1e2e;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            overflow-x: auto;
+        }
+
+        .code-container code {
+            color: #cdd6f4;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            line-height: 1.5;
+        }
+
+        .highlight {
+            background: linear-gradient(120deg, #a8edea 0%, #fed6e3 100%);
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+
+        .controls {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 15px;
+            background: rgba(255,255,255,0.9);
+            padding: 15px 25px;
+            border-radius: 50px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 25px;
+            background: #667eea;
+            color: white;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn:hover {
+            background: #764ba2;
+            transform: translateY(-2px);
+        }
+        
+        .btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .slide-counter {
+            position: fixed;
+            top: 30px;
+            right: 30px;
+            background: rgba(255,255,255,0.9);
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .formula {
+            font-size: 1.2em;
+            text-align: center;
+            background: #f0f0ff;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            font-family: 'Times New Roman', serif;
+        }
+        
+        .skills-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .skill-item {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            font-weight: 600;
+        }
+        
+        .conclusions-list {
+            display: grid;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .conclusion-item {
+            background: #e8f5e8;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #4caf50;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .conclusion-item:before {
+            content: "✅";
+            font-size: 1.2em;
+        }
+
+    </style>
+
+</head>
+<body>
+    
+    <div class="presentation-container">
+
+        <div class="slide-counter">
+
+            <span id="current-slide">1</span> / <span id="total-slides">8</span>
+
+        </div>
+
+        <!-- Portada -->
+
+        <div class="slide active">
+        
+            <div class="slide-header">
+
+                <h1 class="slide-title"> 🌾 Optimización de Envíos de Grano</h1>
+
+                <p class="slide-subtitle">Modelo de Transporte para Minimizar Costos</p>
+
+            </div>
+
+            <div style="text-align: center; margin-top: 50px;">
+
+                <div style="background: linear-gradient(45deg, #667eea, #764ba2); color: white; padding: 40px; border-radius: 20px; display: inline-block;">
+
+                    <h2>🚛 Colombia → Europa del Este</h2>
+
+                    <p style="margin-top: 20px; font-size: 1.2em;">Optimización logística con programación lineal</p>
+
+                </div>
+
+            </div>
+
+            <div style="margin-top: 50px; text-align: center;">
+
+                <p style="font-size: 1.1em; color: #666;">
+
+                    <strong>Objetivo:</strong> Minimizar costos de transporte mientras se satisface la demanda
+
+                </p>
+
+            </div>
+
+        </div>
+
+        <!-- Contexto del Problema -->
+
+        <div class="slide">
+
+            <div class="slide-header">
+
+                <h1 class="slide-title">📋 Contexto del Problema</h1>
+
+                <p class="slide-subtitle">Situación inicial de oferta y demanda</p>
+
+            </div>
+
+            <div class="content-grid">
+
+                <div class="content-box">
+
+                    <h3>🏭 Excedentes en Colombia</h3>
+
+                    <ul>
+                        <li>Manizales: 100,000 toneladas</li>
+                        <li>Pereira: 150,000 toneladas</li>
+                        <li>Armenia: 95,000 toneladas</li>
+                    </ul>
+                    
+                    <div style="margin-top: 15px; font-weight: bold; color: #667eea;">
+
+                        Total Oferta: 345,000 t
+
+                    </div>
+
+                </div>
+
+                <div class="content-box">
+
+                    <h3>🌍 Demanda en Europa del Este</h3>
+
+                    <ul>
+                        <li>Sarajevo: 75,000 toneladas</li>
+                        <li>Ucrania: 150,000 toneladas</li>
+                        <li>Polonia: 120,000 toneladas</li>
+                    </ul>
+
+                    <div style="margin-top: 15px; font-weight: bold; color: #667eea;">
+
+                        Total Demanda: 345,000 t
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="highlight">
+
+                <h3>🎯 Objetivo Principal</h3>
+
+                <p>Minimizar el costo total de transporte asegurando que la oferta cubra completamente la demanda europea.</p>
+
+            </div>
+
+        </div>
+
+        <!-- Tabla de Costos -->
+
+        <div class="slide">
+
+            <div class="slide-header">
+
+                <h1 class="slide-title">💰 Matriz de Costos de Transporte</h1>
+
+                <p class="slide-subtitle">Costos por tonelada (USD) desde cada almacén a cada destino</p>
+
+            </div>
+
+            <div class="table-container">
+
+                <table>
+
+                    <thead>
+
+                        <tr>
+
+                            <th>Almacén/Destino</th>
+                            <th>Sarajevo (S)</th>
+                            <th>Ucrania (U)</th>
+                            <th>Polonia (P)</th>
+                            <th>Oferta (miles t)</th>
+
+                        </tr>
+
+                    </thead>
+
+                    <tbody>
+
+                        <tr>
+
+                            <td style="font-weight: bold;">Manizales (M)</td>
+                            <td>$4</td>
+                            <td>$6</td>
+                            <td>$8</td>
+                            <td style="background: #e8f5e8;">100</td>
+
+                        </tr>
+
+                        <tr>
+
+                            <td style="font-weight: bold;">Pereira (Pe)</td>
+                            <td>$5</td>
+                            <td>$4</td>
+                            <td>$3</td>
+                            <td style="background: #e8f5e8;">150</td>
+
+                        </tr>
+
+                        <tr>
+
+                            <td style="font-weight: bold;">Armenia (A)</td>
+                            <td>$9</td>
+                            <td>$7</td>
+                            <td>$4</td>
+                            <td style="background: #e8f5e8;">95</td>
+
+                        </tr>
+
+                        <tr style="background: #f0f8ff;">
+
+                            <td style="font-weight: bold;">Demanda (miles t)</td>
+                            <td style="background: #ffe8e8;">75</td>
+                            <td style="background: #ffe8e8;">150</td>
+                            <td style="background: #ffe8e8;">120</td>
+                            <td style="background: #fff8dc;">345</td>
+
+                        </tr>
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+            <div style="text-align: center; margin-top: 30px;">
+
+                <p><strong>Nota:</strong> Oferta total = Demanda total (problema balanceado)</p>
+
+            </div>
+
+        </div>
+
+        <!-- Modelo Matemático -->
+
+        <div class="slide">
+
+            <div class="slide-header">
+
+                <h1 class="slide-title">📐 Modelo Matemático</h1>
+
+                <p class="slide-subtitle">Formulación del problema de programación lineal</p>
+
+            </div>
+
+            <div style="display: grid; gap: 25px;">
+
+                <div class="content-box">
+
+                    <h3>🎯 Variables de Decisión</h3>
+
+                    <div class="formula">
+
+                        x<sub>ij</sub> = toneladas enviadas desde almacén i al destino j
+
+                    </div>
+
+                </div>
+
+                <div class="content-box">
+
+                    <h3>📉 Función Objetivo (Minimizar)</h3>
+
+                    <div class="formula">
+
+                        Z = Σ Σ c<sub>ij</sub> · x<sub>ij</sub>
+
+                    </div>
+
+                </div>
+
+                <div class="content-grid" style="grid-template-columns: 1fr 1fr;">
+
+                    <div class="content-box">
+
+                        <h3>📤 Restricciones de Oferta</h3>
+
+                        <div class="formula">
+                            
+                            Σ x<sub>ij</sub> ≤ Oferta<sub>i</sub>
+
+                        </div>
+
+                    </div>
+
+                    <div class="content-box">
+
+                        <h3>📥 Restricciones de Demanda</h3>
+
+                        <div class="formula">
+
+                            Σ x<sub>ij</sub> ≥ Demanda<sub>j</sub>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <div class="content-box">
+
+                    <h3>✅ Restricción de No Negatividad</h3>
+
+                    <div class="formula">
+
+                        x<sub>ij</sub> ≥ 0 para todo i, j
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- Implementación Python -->
+
+        <div class="slide">
+
+            <div class="slide-header">
+
+                <h1 class="slide-title">🐍 Implementación en Python</h1>
+
+                <p class="slide-subtitle">Resolución con la librería PuLP</p>
+
+            </div>
+
+            <div class="code-container">
+
+                <code>
+
+                    import pulp
+
+# Oferta, demanda y costos
+
+oferta = {"Manizales": 100, "Pereira": 150, "Armenia": 95}
+demanda = {"Sarajevo": 75, "Ucrania": 150, "Croacia": 120}
+
+# Costos definidos con strings
+costos = {
+    "Manizales-Sarajevo": 4, "Manizales-Ucrania": 6, "Manizales-Croacia": 8,
+    "Pereira-Sarajevo": 5, "Pereira-Ucrania": 4, "Pereira-Croacia": 3,
+    "Armenia-Sarajevo": 9, "Armenia-Ucrania": 7, "Armenia-Croacia": 4,
+}
+
+# Nodos de origen y destino
+nodos_origen = list(oferta.keys())
+nodos_destino = list(demanda.keys())
+
+# Modelo
+modelo = pulp.LpProblem("Transporte_de_grano", pulp.LpMinimize)
+
+# Variables
+x = pulp.LpVariable.dicts("x", (i + '-' + j for i in nodos_origen for j in nodos_destino), lowBound=0)
+
+# Función objetivo
+modelo += pulp.lpSum(costos[i + '-' + j] * x[i + '-' + j] for i in nodos_origen for j in nodos_destino)
+
+# Restricciones de oferta
+for i in nodos_origen:
+    modelo += pulp.lpSum(x[i + '-' + j] for j in nodos_destino) <= oferta[i]
+
+# Restricciones de demanda
+for j in nodos_destino:
+    modelo += pulp.lpSum(x[i + '-' + j] for i in nodos_origen) >= demanda[j]
+
+# Resolver el modelo
+modelo.solve()
+
+# Resultados
+print("Plan de transporte óptimo:")
+for v in modelo.variables():
+    if v.varValue > 0:
+        print(f"{v.name} = {v.varValue}")
+
+print(f"Costo total: {pulp.value(modelo.objective)}")
+
+                </code>
+
+            </div>
+
+        </div>
+
+        <!-- Resultados -->
+
+        <div class="slide">
+
+            <div class="slide-header">
+
+                <h1 class="slide-title">📊 Plan Óptimo de Transporte</h1>
+
+                <p class="slide-subtitle">Solución que minimiza los costos</p>
+
+            </div>
+
+            <div class="table-container">
+
+                <table>
+
+                    <thead>
+
+                        <tr>
+
+                            <th>Origen</th>
+                            <th>Destino</th>
+                            <th>Cantidad (miles t)</th>
+                            <th>Costo Unitario</th>
+                            <th>Costo Total</th>
+
+                        </tr>
+
+                    </thead>
+
+                    <tbody>
+
+                        <tr>
+                            <td>Manizales</td>
+                            <td>Sarajevo</td>
+                            <td>75</td>
+                            <td>$4</td>
+                            <td>$300,000</td>
+                        </tr>
+
+                        <tr>
+                            <td>Manizales</td>
+                            <td>Ucrania</td>
+                            <td>25</td>
+                            <td>$6</td>
+                            <td>$150,000</td>
+                        </tr>
+                        <tr>
+                            <td>Pereira</td>
+                            <td>Ucrania</td>
+                            <td>125</td>
+                            <td>$4</td>
+                            <td>$500,000</td>
+                        </tr>
+                        <tr>
+                            <td>Pereira</td>
+                            <td>Polonia</td>
+                            <td>25</td>
+                            <td>$3</td>
+                            <td>$75,000</td>
+                        </tr>
+                        <tr>
+                            <td>Armenia</td>
+                            <td>Polonia</td>
+                            <td>95</td>
+                            <td>$4</td>
+                            <td>$380,000</td>
+                        </tr>
+
+                        <tr style="background: #f0f8ff; font-weight: bold;">
+
+                            <td colspan="4">COSTO TOTAL MÍNIMO</td>
+
+                            <td>$1,405,000</td>
+
+                        </tr>
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+        <!-- Caso de Oferta Insuficiente -->
+
+        <div class="slide">
+
+            <div class="slide-header">
+
+                <h1 class="slide-title">⚠️ Escenario de Oferta Insuficiente</h1>
+
+                <p class="slide-subtitle">Manejo de demanda no satisfecha</p>
+
+            </div>
+
+            <div class="content-grid">
+
+                <div class="content-box">
+
+                    <h3>📉 Nueva Oferta Reducida</h3>
+
+                    <ul>
+
+                        <li>Manizales: 80,000 t</li>
+                        <li>Pereira: 120,000 t</li>
+                        <li>Armenia: 70,000 t</li>
+
+                    </ul>
+
+                    <div style="margin-top: 15px; font-weight: bold; color: #e74c3c;">
+
+                        Total: 270,000 t < 345,000 t
+
+                    </div>
+
+                </div>
+
+                <div class="content-box">
+
+                    <h3>🎯 Solución: Destino Ficticio</h3>
+
+                    <ul>
+
+                        <li>Agregar destino "No Satisfecho"</li>
+                        <li>Capacidad: 75,000 t (diferencia)</li>
+                        <li>Costo de transporte: $0</li>
+
+                    </ul>
+
+                </div>
+
+            </div>
+
+            <div class="highlight">
+
+                <h3>💡 Beneficios de esta Estrategia</h3>
+
+                <ul style="list-style: none; padding: 0;">
+
+                    <li>✓ Identifica claramente la demanda insatisfecha</li>
+                    <li>✓ Redistribuye eficientemente los recursos disponibles</li>
+                    <li>✓ Mantiene la estructura del modelo matemático</li>
+                    <li>✓ Proporciona información para toma de decisiones</li>
+
+                </ul>
+
+            </div>
+
+        </div>
+
+        <!-- Conclusiones -->
+
+        <div class="slide">
+
+            <div class="slide-header">
+
+                <h1 class="slide-title">🎯 Conclusiones y Habilidades</h1>
+
+                <p class="slide-subtitle">Resultados obtenidos y competencias desarrolladas</p>
+
+            </div>
+
+            <div style="margin-bottom: 30px;">
+
+                <h3 style="color: #333; margin-bottom: 20px;">📋 Conclusiones Principales</h3>
+
+                <div class="conclusion-item">
+
+                    El modelo de transporte identifica la distribución más económica
+
+                </div>
+
+                <div class="conclusion-item">
+
+                        Python permite resolver problemas complejos de optimización
+
+                    </div>
+
+                    <div class="conclusion-item">
+
+                        Los destinos ficticios modelan eficazmente la escasez
+
+                    </div>
+
+                    <div class="conclusion-item">
+
+                        Metodología aplicable a múltiples industrias
+
+                    </div>
+
+            </div>
+
+        </div>
+
+        <h3 style="color: #333; margin-bottom: 20px;">🧠 Habilidades de Pensamiento Aplicadas</h3>
+
+        <div class="skills-grid">
+
+                <div class="skill-item">🔍 Pensamiento Crítico</div>
+                <div class="skill-item">📊 Pensamiento Analítico</div>
+                <div class="skill-item">🧮 Pensamiento Lógico-Matemático</div>
+                <div class="skill-item">💡 Pensamiento Creativo</div>
+                <div class="skill-item">💻 Competencia Tecnológica</div>
+
+                </div>
+
+            </div>
+
+    </div>
+
+    <div class="controls">
+
+        <button class="btn" id="prevBtn" onclick="changeSlide(-1)">← Anterior</button>
+        <button class="btn" id="nextBtn" onclick="changeSlide(1)">Siguiente →</button>
+
+    </div>
+
+    <script>
+
+        let currentSlideIndex = 0;
+        const slides = document.querySelectorAll('.slide');
+        const totalSlides = slides.length;
+
+        document.getElementById('total-slides').textContent = totalSlides;
+
+        function showSlide(index) {
+            slides.forEach(slide => slide.classList.remove('active'));
+            slides[index].classList.add('active');
+
+            document.getElementById('current-slide').textContent = index + 1;
+            document.getElementById('prevBtn').disabled = index === 0;
+            document.getElementById('nextBtn').disabled = index === totalSlides - 1;
+        }
+
+        function changeSlide(direction) {
+            currentSlideIndex += direction;
+            if (currentSlideIndex < 0) currentSlideIndex = 0;
+            if (currentSlideIndex >= totalSlides) currentSlideIndex = totalSlides - 1;
+            showSlide(currentSlideIndex);
+        }
+
+        // Navegación con teclado
+
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'ArrowLeft') changeSlide(-1);
+            if (event.key === 'ArrowRight') changeSlide(1);
+        });
+
+        // Inicializar
+        showSlide(0);
+
+    </script>
+
+</body>
+</html>
